@@ -21,6 +21,10 @@ services:
       - POSTGRES_USER=toodobin_dev
       - POSTGRES_PASSWORD=toodobin_dev
       - CSRF_TOKEN="02A],K1zcT7Z9Ni)9-uv%-]S?0$UIz"
+      - AIRBRAKE_PROJECT_ID=${AIRBRAKE_PROJECT_ID}
+      - AIRBRAKE_API_KEY=${AIRBRAKE_API_KEY}
+      - AIRBRAKE_ENVIRONMENT=${AIRBRAKE_ENVIRONMENT}
+
   db:
     image: postgres
     ports:

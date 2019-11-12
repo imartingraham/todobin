@@ -8,6 +8,7 @@ import (
 
 	// pg sets up postgres sql
 	_ "github.com/lib/pq"
+	"gitub.com/imartingraham/todobin/internal/util"
 )
 
 var db *sql.DB
@@ -23,10 +24,12 @@ func init() {
 	dataSourceName := fmt.Sprintf("user=%s password=%s dbname=%s host=%s sslmode=disable", dbUser, dbPassword, dbName, dbHost)
 	db, err = sql.Open("postgres", dataSourceName)
 	if err != nil {
+		util.Airbrake.Notify(fmt.Errorf("Failed to open DB connection: %w", err), nil)
 		log.Panic(err)
 	}
 
 	if err = db.Ping(); err != nil {
+		util.Airbrake.Notify(fmt.Errorf("Failed to Ping DB: %w", err), nil)
 		log.Panic(err)
 	}
 }

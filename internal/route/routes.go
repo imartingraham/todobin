@@ -2,6 +2,7 @@ package route
 
 import (
 	"encoding/json"
+	"errors"
 	"fmt"
 	"log"
 	"net/http"
@@ -12,11 +13,13 @@ import (
 	"github.com/gorilla/mux"
 	"github.com/microcosm-cc/bluemonday"
 	"gitub.com/imartingraham/todobin/internal/model"
+	"gitub.com/imartingraham/todobin/internal/util"
 )
+
+var tpl = template.Must(template.ParseGlob("web/template/*.html"))
 
 // HandleIndex is the route for "/"
 func HandleIndex(w http.ResponseWriter, r *http.Request) {
-	tpl := template.Must(template.ParseFiles("web/template/index.html"))
 	var tplvars struct {
 		CSRFToken string
 		Name      string
@@ -32,7 +35,7 @@ func HandleIndex(w http.ResponseWriter, r *http.Request) {
 		p := bluemonday.StrictPolicy()
 
 		if err := r.ParseForm(); err != nil {
-			fmt.Fprintf(w, "ParseForm() err: %v", err)
+			util.Airbrake.Notify(fmt.Errorf("ParseForm() err: %w", err), r)
 			return
 		}
 		todoList := &model.TodoList{
@@ -56,6 +59,7 @@ func HandleIndex(w http.ResponseWriter, r *http.Request) {
 
 		err := todoList.Save()
 		if err != nil {
+			util.Airbrake.Notify(fmt.Errorf("Failed to save todo list: %w", err), r)
 			panic(err)
 		}
 
@@ -67,6 +71,7 @@ func HandleIndex(w http.ResponseWriter, r *http.Request) {
 	}
 	err := tpl.ExecuteTemplate(w, "index.html", tplvars)
 	if err != nil {
+		util.Airbrake.Notify(fmt.Errorf("failed to execute index.html: %w", err), r)
 		log.Fatalf("[error] failed to execute index.html: %v\n", err)
 	}
 }
@@ -80,7 +85,6 @@ func HandleTodos(w http.ResponseWriter, r *http.Request) {
 	}
 
 	tplvars.CSRFToken = csrf.Token(r)
-	tpl := template.Must(template.ParseFiles("web/template/todo.html"))
 	vars := mux.Vars(r)
 	listID, ok := vars["listId"]
 	if !ok {
@@ -96,7 +100,8 @@ func HandleTodos(w http.ResponseWriter, r *http.Request) {
 	tplvars.TodoList = list
 	err = tpl.ExecuteTemplate(w, "todo.html", tplvars)
 	if err != nil {
-		log.Fatalf("[error] failed to execute todo.html: %v\n", err)
+		util.Airbrake.Notify(fmt.Errorf("Failed to execute todo.html: %w", err), nil)
+		log.Fatalf("[error] Failed to execute todo.html: %v\n", err)
 	}
 }
 
@@ -104,6 +109,7 @@ func HandleTodos(w http.ResponseWriter, r *http.Request) {
 func HandleTodoDone(w http.ResponseWriter, r *http.Request) {
 	if r.Method != "PUT" {
 		w.WriteHeader(http.StatusForbidden)
+		util.Airbrake.Notify(errors.New("Route only handles PUT requests"), r)
 		log.Fatalf("[error] Route only handles PUT requests")
 		return
 	}
@@ -115,18 +121,21 @@ func HandleTodoDone(w http.ResponseWriter, r *http.Request) {
 	t, err := model.TodoByID(listID, todoID)
 	if err != nil {
 		w.WriteHeader(http.StatusInternalServerError)
+		util.Airbrake.Notify(fmt.Errorf("Failed to fetch todo: %w", err), r)
 		log.Fatalf("[error] failed to fetch todo: %v\n", err)
 	}
 
 	err = t.ToggleDone()
 	if err != nil {
 		w.WriteHeader(http.StatusInternalServerError)
+		util.Airbrake.Notify(fmt.Errorf("Failed to toggle done for todo: %w", err), r)
 		log.Fatalf("[error] failed to toggle done for todo: %v\n", err)
 	}
 
 	jsonData, err := json.Marshal(t)
 	if err != nil {
 		w.WriteHeader(http.StatusInternalServerError)
+		util.Airbrake.Notify(fmt.Errorf("Failed to json encode todo: %w", err), r)
 		log.Fatalf("[error] could not json encode todo: %v\n", err)
 	}
 

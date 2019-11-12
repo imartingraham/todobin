@@ -8,10 +8,14 @@ import (
 	"github.com/gorilla/csrf"
 	"github.com/gorilla/mux"
 	"gitub.com/imartingraham/todobin/internal/route"
+	"gitub.com/imartingraham/todobin/internal/util"
 )
 
 func main() {
-	go route.HandleMessages()
+	go route.ListenForWebsocketMessages()
+	defer util.Airbrake.Close()
+	defer util.Airbrake.NotifyOnPanic()
+
 	r := mux.NewRouter()
 
 	fs := http.FileServer(http.Dir("./web/public"))
@@ -24,11 +28,12 @@ func main() {
 
 	http.Handle("/", r)
 
-	port := os.Getenv("PORT")
+	port := util.GetEnvOr("PORT", "3000")
 	fmt.Println("Ready and listening on " + port)
 	p := csrf.Protect([]byte(os.Getenv("CSRF_TOKEN")))
 	err := http.ListenAndServe(":"+port, p(r))
 	if err != nil {
+		util.Airbrake.Notify(fmt.Errorf("Failed to listen on port: %s", port), nil)
 		panic(err)
 	}
 }
