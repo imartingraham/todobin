@@ -8,7 +8,7 @@ import (
 
 	// pg sets up postgres sql
 	_ "github.com/lib/pq"
-	"gitub.com/imartingraham/todobin/internal/util"
+	"github.com/imartingraham/todobin/internal/util"
 )
 
 var db *sql.DB

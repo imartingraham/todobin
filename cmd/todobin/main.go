@@ -7,8 +7,8 @@ import (
 
 	"github.com/gorilla/csrf"
 	"github.com/gorilla/mux"
-	"gitub.com/imartingraham/todobin/internal/route"
-	"gitub.com/imartingraham/todobin/internal/util"
+	"github.com/imartingraham/todobin/internal/route"
+	"github.com/imartingraham/todobin/internal/util"
 )
 
 func main() {

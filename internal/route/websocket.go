@@ -7,7 +7,7 @@ import (
 	"sync"
 
 	"github.com/gorilla/websocket"
-	"gitub.com/imartingraham/todobin/internal/util"
+	"github.com/imartingraham/todobin/internal/util"
 )
 
 // Message that will be sent to client

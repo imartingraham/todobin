@@ -1,4 +1,4 @@
-module gitub.com/imartingraham/todobin
+module github.com/imartingraham/todobin
 
 go 1.13
 

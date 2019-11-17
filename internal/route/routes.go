@@ -11,9 +11,9 @@ import (
 
 	"github.com/gorilla/csrf"
 	"github.com/gorilla/mux"
+	"github.com/imartingraham/todobin/internal/model"
+	"github.com/imartingraham/todobin/internal/util"
 	"github.com/microcosm-cc/bluemonday"
-	"gitub.com/imartingraham/todobin/internal/model"
-	"gitub.com/imartingraham/todobin/internal/util"
 )
 
 var tpl = template.Must(template.ParseGlob("web/template/*.html"))
