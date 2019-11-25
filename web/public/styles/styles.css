@@ -1,5 +1,6 @@
 .todo-item {
   list-style: none;
+  border-bottom: 1px solid #ccc;
 }
 
 .todo-item.done {
@@ -7,8 +8,14 @@
   color: #aaa;
 }
 
+.todo-delete {
+  float: right;
+  opacity: 0.5;
+}
+
 .todo-item label {
   font-weight: normal;
+  display: inline;
 }
 .hide{
   display: none;

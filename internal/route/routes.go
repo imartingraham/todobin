@@ -142,3 +142,40 @@ func HandleTodoDone(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("Content-Type", "application/json")
 	w.Write(jsonData)
 }
+
+func HandleTodoDelete(w http.ResponseWriter, r *http.Request) {
+	if r.Method != "DELETE" {
+		w.WriteHeader(http.StatusForbidden)
+		util.Airbrake.Notify(errors.New("Route only handles PUT requests"), r)
+		log.Fatalf("[error] Route only handles PUT requests")
+		return
+	}
+
+	vars := mux.Vars(r)
+	listID := vars["listId"]
+	todoID := vars["todoId"]
+
+	t, err := model.TodoByID(listID, todoID)
+	if err != nil {
+		w.WriteHeader(http.StatusInternalServerError)
+		util.Airbrake.Notify(fmt.Errorf("Failed to fetch todo: %w", err), r)
+		log.Fatalf("[error] failed to fetch todo: %v\n", err)
+	}
+
+	err = t.Delete()
+	if err != nil {
+		w.WriteHeader(http.StatusInternalServerError)
+		util.Airbrake.Notify(fmt.Errorf("Failed to toggle done for todo: %w", err), r)
+		log.Fatalf("[error] failed to toggle done for todo: %v\n", err)
+	}
+
+	jsonData, err := json.Marshal(t)
+	if err != nil {
+		w.WriteHeader(http.StatusInternalServerError)
+		util.Airbrake.Notify(fmt.Errorf("Failed to json encode todo: %w", err), r)
+		log.Fatalf("[error] could not json encode todo: %v\n", err)
+	}
+
+	w.Header().Set("Content-Type", "application/json")
+	w.Write(jsonData)
+}

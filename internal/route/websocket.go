@@ -115,6 +115,14 @@ func (m *socketManager) todoDone(client *websocket.Conn, msg *Message) error {
 	}
 	return nil
 }
+func (m *socketManager) todoDelete(client *websocket.Conn, msg *Message) error {
+	if err := client.WriteJSON(msg); err != nil {
+		defer client.Close()
+		m.removeClient(msg.Data.ListID, client)
+		return err
+	}
+	return nil
+}
 
 func (m *socketManager) handleMessage(msg *Message) error {
 	listClients := m.clients[msg.Data.ListID]
@@ -124,7 +132,14 @@ func (m *socketManager) handleMessage(msg *Message) error {
 			if err := m.todoDone(client, msg); err != nil {
 				return fmt.Errorf("todoDone failed: %w", err)
 			}
+			break
+		case "todo:delete":
+			if err := m.todoDelete(client, msg); err != nil {
+				return fmt.Errorf("todoDelete failed: %w", err)
+			}
+			break
 		}
+		
 	}
 	return nil
 }

@@ -22,6 +22,9 @@
               {{if .Done}}checked{{end}} />
             <span class="todo-todo">{{.Todo}}</span>
           </label>
+          <a href="#" class="todo-delete" data-id="{{.ID}}">
+            <img src="/images/times-solid.svg" height="20" width="20" />
+          </a>
         </li>
         {{end}}
       </ul>
@@ -42,9 +45,8 @@
           case 'todo:done':
             var todoItem = document.getElementById(`todo-${msg.data.todo_id}`)
             if (todoItem) {
-              var check = todoItem.querySelector('input[type="checkbox"]')
+              var check = todoItem.querySelector('input[type=" checkbox"]')
               check.checked = msg.data.done
-
               if (msg.data.done) {
                 todoItem.classList.add('done')
               } else {
@@ -52,30 +54,23 @@
               }
             }
             break;
-          case 'register:success':
-            // just in case we somehow get multiple register:success
+          case 'todo:delete':
+            removeTodo(msg.data.todo_id)
+            break;
+          case 'register:success': // just in case we somehow get multiple register: success 
             if (ping) {
               clearInterval(ping)
             }
             ping = setInterval(function () {
-              ws.send(JSON.stringify({
-                event: 'ping',
-                data: {}
-              }))
+              ws.send(JSON.stringify({ event: 'ping', data: {} }))
             }, 30000)
-
-            break
-          default:
             break;
         }
       })
-
       ws.onopen = function () {
         ws.send(JSON.stringify({
           event: 'register',
-          data: {
-            list_id: listId
-          }
+          data: { list_id: listId }
         }))
       }
       ws.onclose = function () {
@@ -90,13 +85,56 @@
       }
     }
 
+    function getCsrf() {
+      return document.getElementsByTagName('meta')['gorilla.csrf.Token'].getAttribute('content');
+    }
+    function removeTodo(todoId) {
+      var todoItem = document.getElementById(`todo-${todoId}`)
+      if (todoItem) {
+        todoItem.parentNode.removeChild(todoItem)
+      }
+    }
 
+    function toggleTodo(todoId, done) {
+      var todoItem = document.getElementById(`todo-${todoId}`)
+      if (done) {
+        todoItem.classList.add('done')
+      } else {
+        todoItem.classList.remove('done')
+      }
+    }
+
+    async function deleteTodo(evt) {
+      evt.preventDefault();
+      if (!confirm('Are you sure?')) {
+        return false;
+      }
+      var csrfValue = getCsrf(),
+        btn = this,
+        id = btn.getAttribute('data-id'),
+        url = window.location.href.replace('#', '') + '/delete/' + id
+      var response = await fetch(url, {
+        method: 'DELETE', headers: {
+          'X-CSRF-Token':
+            csrfValue, 'Content-Type': 'application/json'
+        }
+      })
+      var result = await response.json();
+      removeTodo(result.id);
+      ws.send(JSON.stringify({
+        event: 'todo:delete',
+        data: {
+          list_id: listId,
+          todo_id: id,
+          done: result.done
+        }
+      }))
+    }
     async function markTodo(evt) {
-      var csrfValue = document.getElementsByTagName('meta')['gorilla.csrf.Token'].getAttribute('content'),
+      var csrfValue = getCsrf(),
         check = evt.target,
         id = check.getAttribute('data-id'),
         url = window.location.href + '/done/' + id
-
       var response = await fetch(url, {
         method: 'PUT',
         headers: {
@@ -105,13 +143,7 @@
         }
       })
       var result = await response.json();
-      var todoItem = document.getElementById('todo-' + result.id)
-      if (result.done) {
-        todoItem.classList.add('done')
-      } else {
-        todoItem.classList.remove('done')
-      }
-
+      toggleTodo(result.id, result.done);
       ws.send(JSON.stringify({
         event: 'todo:done',
         data: {
@@ -121,24 +153,26 @@
         }
       }))
     }
-
-    var checks = document.querySelectorAll('.todo-done')
-
+    var checks = document.querySelectorAll('.todo-done');
     for (var i = 0; i < checks.length; i++) {
       var check = checks[i]
       check.addEventListener('change', markTodo)
     }
+    var removes = document.querySelectorAll('.todo-delete')
+    for (var i = 0; i < removes.length; i++) {
+      var btn = removes[i];
+      btn.addEventListener('click', deleteTodo);
+    }
 
     function addToLocalStorage() {
-      var uuid = window.location.pathname.replace('/todo/', '')
-      var title = document.getElementById('todo-list-name').innerText
-      var lists = getStoredLists()
+      var uuid = window.location.pathname.replace('/todo/', ''),
+        title = document.getElementById('todo-list-name').innerText,
+        lists = getStoredLists();
       lists[uuid] = title
       saveLists(lists)
     }
-
-    addToLocalStorage()
-    connectWs()
+    addToLocalStorage();
+    connectWs();
   </script>
 </body>
 

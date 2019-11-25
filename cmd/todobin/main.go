@@ -21,8 +21,10 @@ func main() {
 	fs := http.FileServer(http.Dir("./web/public"))
 	r.PathPrefix("/scripts/").Handler(fs)
 	r.PathPrefix("/styles/").Handler(fs)
+	r.PathPrefix("/images/").Handler(fs)
 	r.HandleFunc("/todo/{listId}", route.HandleTodos)
 	r.HandleFunc("/todo/{listId}/done/{todoId}", route.HandleTodoDone)
+	r.HandleFunc("/todo/{listId}/delete/{todoId}", route.HandleTodoDelete)
 	r.HandleFunc("/ws", route.HandleWs)
 	r.HandleFunc("/", route.HandleIndex)
 

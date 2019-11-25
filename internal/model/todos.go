@@ -135,3 +135,12 @@ func (t *Todo) ToggleDone() error {
 
 	return nil
 }
+
+func (t *Todo) Delete() error {
+	sql := `DELETE FROM todos WHERE id = $1 AND list_id = $2 RETURNING id, list_id, done, todo`
+	err := db.QueryRow(sql, t.ID, t.ListID).Scan(&t.ID, &t.ListID, &t.Done, &t.Todo)
+	if err != nil {
+		return err
+	}
+	return nil
+}
