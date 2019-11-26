@@ -115,8 +115,8 @@
         url = window.location.href.replace('#', '') + '/delete/' + id
       var response = await fetch(url, {
         method: 'DELETE', headers: {
-          'X-CSRF-Token':
-            csrfValue, 'Content-Type': 'application/json'
+          'X-CSRF-Token': csrfValue,
+          'Content-Type': 'application/json'
         }
       })
       var result = await response.json();
