@@ -19,5 +19,4 @@ CREATE TABLE lists (
 	PRIMARY KEY (id)
 );
 
-ALTER TABLE todos
-ADD COLUMN important BOOLEAN;
+ALTER TABLE todos ADD COLUMN important BOOLEAN;

@@ -45,7 +45,7 @@
           case 'todo:done':
             var todoItem = document.getElementById(`todo-${msg.data.todo_id}`)
             if (todoItem) {
-              var check = todoItem.querySelector('input[type=" checkbox"]')
+              var check = todoItem.querySelector('input[type="checkbox"]')
               check.checked = msg.data.done
               if (msg.data.done) {
                 todoItem.classList.add('done')
