@@ -16,7 +16,7 @@
       {{if .TodoList.Todos}}
       <ul class="todo-list">
         {{range .TodoList.Todos}}
-        <li class="todo-item{{if .Done}} done{{end}}" id="todo-{{.ID}}">
+        <li class="todo-item{{if .Done}} done{{end}}{{if .Important}} important{{end}}" id="todo-{{.ID}}">
           <label for="todo-check-{{.ID}}">
             <input type="checkbox" class="todo-done" name="done" value="true" data-id="{{.ID}}" id="todo-check-{{.ID}}"
               {{if .Done}}checked{{end}} />

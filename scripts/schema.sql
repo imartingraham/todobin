@@ -18,3 +18,6 @@ CREATE TABLE lists (
 	updated_at TIMESTAMP DEFAULT current_timestamp,
 	PRIMARY KEY (id)
 );
+
+ALTER TABLE todos
+ADD COLUMN important BOOLEAN;

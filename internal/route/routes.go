@@ -49,11 +49,18 @@ func HandleIndex(w http.ResponseWriter, r *http.Request) {
 			if strings.HasPrefix(t, "-") {
 				t = strings.Replace(t, "-", "", 1)
 			}
+			var important bool
+			if strings.HasPrefix(t, "!") {
+				important = true
+				t = strings.Replace(t, "!", "", 1)
+			}
+
 			// When I sanitize the string before splitting
 			// it doesn't work, so for now I'm just sanitizing
 			// each line
 			todoList.Todos = append(todoList.Todos, &model.Todo{
-				Todo: p.Sanitize(strings.TrimSpace(t)),
+				Todo:      p.Sanitize(strings.TrimSpace(t)),
+				Important: important,
 			})
 		}
 

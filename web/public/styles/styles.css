@@ -8,6 +8,10 @@
   color: #aaa;
 }
 
+.todo-item.important .todo-todo {
+  font-weight: bold;
+}
+
 .todo-delete {
   float: right;
   opacity: 0.5;

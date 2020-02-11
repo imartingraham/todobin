@@ -6,10 +6,11 @@ import (
 
 // Todo from database
 type Todo struct {
-	ID     string `json:"id"`
-	ListID string `json:"list_id"`
-	Todo   string `json:"todo"`
-	Done   bool   `json:"done"`
+	ID        string `json:"id"`
+	ListID    string `json:"list_id"`
+	Todo      string `json:"todo"`
+	Done      bool   `json:"done"`
+	Important bool   `json:"important"`
 }
 
 // TodoList kind of a has many struct
@@ -70,8 +71,8 @@ func (tl *TodoList) Save() error {
 // TodoByID fetches a single todo given a listID and todoID
 func TodoByID(listID, todoID string) (*Todo, error) {
 	t := &Todo{}
-	sql := `SELECT id, list_id, todo, done FROM todos WHERE list_id = $1 AND id = $2 ORDER BY created_at ASC;`
-	err := db.QueryRow(sql, listID, todoID).Scan(&t.ID, &t.ListID, &t.Todo, &t.Done)
+	sql := `SELECT id, list_id, todo, done, important FROM todos WHERE list_id = $1 AND id = $2 ORDER BY created_at ASC;`
+	err := db.QueryRow(sql, listID, todoID).Scan(&t.ID, &t.ListID, &t.Todo, &t.Done, &t.Important)
 	if err != nil {
 		return nil, err
 	}
@@ -81,7 +82,7 @@ func TodoByID(listID, todoID string) (*Todo, error) {
 
 // TodosByListID fetches the todos for a given list ID
 func TodosByListID(id string) ([]*Todo, error) {
-	sql := `SELECT id, list_id, todo, done FROM todos WHERE list_id = $1 ORDER BY created_at ASC;`
+	sql := `SELECT id, list_id, todo, done, important FROM todos WHERE list_id = $1 ORDER BY created_at ASC;`
 	rows, err := db.Query(sql, id)
 	if err != nil {
 		return nil, err
@@ -90,7 +91,7 @@ func TodosByListID(id string) ([]*Todo, error) {
 	var todos []*Todo
 	for rows.Next() {
 		todo := &Todo{}
-		err := rows.Scan(&todo.ID, &todo.ListID, &todo.Todo, &todo.Done)
+		err := rows.Scan(&todo.ID, &todo.ListID, &todo.Todo, &todo.Done, &todo.Important)
 		if err != nil {
 			return nil, err
 		}
@@ -116,8 +117,8 @@ func (t *Todo) Save() error {
 		return err
 	}
 
-	sql := `INSERT INTO todos(list_id, todo) VALUES($1, $2) RETURNING id`
-	err := db.QueryRow(sql, t.ListID, t.Todo).Scan(&t.ID)
+	sql := `INSERT INTO todos(list_id, todo, important) VALUES($1, $2, $3) RETURNING id`
+	err := db.QueryRow(sql, t.ListID, t.Todo, t.Important).Scan(&t.ID)
 	if err != nil {
 		return err
 	}

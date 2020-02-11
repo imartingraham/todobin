@@ -3,9 +3,7 @@ package main
 import (
 	"fmt"
 	"net/http"
-	"os"
 
-	"github.com/gorilla/csrf"
 	"github.com/gorilla/mux"
 	"github.com/imartingraham/todobin/internal/route"
 	"github.com/imartingraham/todobin/internal/util"
@@ -32,8 +30,9 @@ func main() {
 
 	port := util.GetEnvOr("PORT", "3000")
 	fmt.Println("Ready and listening on " + port)
-	p := csrf.Protect([]byte(os.Getenv("CSRF_TOKEN")))
-	err := http.ListenAndServe(":"+port, p(r))
+	// p := csrf.Protect([]byte(os.Getenv("CSRF_TOKEN")))
+	// err := http.ListenAndServe(":"+port, p(r))
+	err := http.ListenAndServe(":"+port, r)
 	if err != nil {
 		util.Airbrake.Notify(fmt.Errorf("Failed to listen on port: %s", port), nil)
 		panic(err)
